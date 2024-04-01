@@ -1,7 +1,7 @@
 import requests
 from datetime import datetime, timedelta
 
-def download_rainfall_data(url, stations):
+def download_rainfall_data_aaws(url, stations):
     # Mengirim request ke URL
     response = requests.get(url)
     if response.status_code == 200:
@@ -31,7 +31,7 @@ url_dinamis = f"http://202.90.198.212/logger/ftp/logAAWS-{tanggal_format_url}.tx
 stations = ['STA3209', 'sta3032', 'sta3212', 'STS1001']
 
 # Download dan cetak data curah hujan
-rainfall_data = download_rainfall_data(url_dinamis, stations)
+rainfall_data = download_rainfall_data_aaws(url_dinamis, stations)
 
 # Mendapatkan tanggal dan waktu saat ini untuk mencetak bersama dengan data
 waktu_sekarang = datetime.now()

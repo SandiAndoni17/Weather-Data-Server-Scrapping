@@ -78,7 +78,7 @@ configurations = [
     # Konfigurasi untuk URL tambahan 3
     {
         "url_template": "http://202.90.198.212/logger/ftp/logAWS-{date}.txt",
-        "station_codes": ['160051', '160044'],
+        "station_codes": ['STA2068','160051', '160044'],
         "date_format": "%d-%m-%Y",
         "datetime_index": 0,  # Menggunakan format yang diberikan, perlu disesuaikan jika format berbeda
         "rainfall_index": 10,
