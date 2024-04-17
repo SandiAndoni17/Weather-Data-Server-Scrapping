@@ -4,7 +4,9 @@ import json
 import openpyxl
 from station_list import ARG_STATION_LIST, AAWS_STATION_LIST, AWS_STATION_LIST, AWS2_STATION_LIST
 
-def get_rainfall_last_entries(station_codes):
+
+def get_rainfall_last_entries(stations):
+    stations = [station['id_stn'] for station in ARG_STATION_LIST]
     # Langkah 1: Menghasilkan URL dan tanggal dinamis
     tanggal_sekarang = datetime.now()
     tanggal_sebelumnya = tanggal_sekarang - timedelta(days=1)
@@ -18,37 +20,24 @@ def get_rainfall_last_entries(station_codes):
     if response.status_code == 200:
         data_string = response.text
         last_entries = {}
+
         for line in data_string.strip().split('\n'):
             parts = line.split(';')
-            if len(parts) > 3 and parts[0] in station_codes:
+            if len(parts) > 3 and parts[0] in '':
                 station_code = parts[0]
                 date_time = parts[1]
                 # Pengecekan DateTime format menjadi dinamis
                 if date_time.startswith(dynamic_date):
-                    last_entries[station_code] = {
+                    last_entries[stations] = {
                         'DateTime': date_time,
                         'Rainfall': parts[2]
                     }
 
         return last_entries
 
-def get_rainfall_last_entries(station_codes):
-    # Langkah 1: Menghasilkan URL dan tanggal dinamis
-    tanggal_sekarang = datetime.now()
-    tanggal_sebelumnya = tanggal_sekarang - timedelta(days=1)
-    formatted_date = tanggal_sebelumnya.strftime('log-%d-%m-%Y.txt')
-    dynamic_date = tanggal_sebelumnya.strftime('%d%m%Y')  # Format tanggal menjadi DDMMYYYY
-
-    url_dinamis = f"http://202.90.198.212/logger/{formatted_date}"
-
-    # Langkah 2: Mengunduh dan memproses data
-    response = requests.get(url_dinamis)
-    if response.status_code == 200:
-        data_string = response.text
-        last_entries = {}
         for line in data_string.strip().split('\n'):
             parts = line.split(';')
-            if len(parts) > 3 and parts[0] in station_codes:
+            if len(parts) > 3 and parts[0] in stations:
                 station_code = parts[0]
                 date_time = parts[1]
                 # Pengecekan DateTime format menjadi dinamis
@@ -58,7 +47,7 @@ def get_rainfall_last_entries(station_codes):
                         rainfall_index = 3
                     else:
                         rainfall_index = 2
-                    last_entries[station_code] = {
+                    last_entries[stations] = {
                         'DateTime': date_time,
                         'Rainfall': parts[rainfall_index]  # Menggunakan indeks yang disesuaikan
                     }
@@ -68,29 +57,32 @@ def get_rainfall_last_entries(station_codes):
         return {}
 
 
-def print_rainfall_report(last_entries, station_codes):
+def print_rainfall_report(last_entries, stations):
+    stations = [station['id_stn'] for station in ARG_STATION_LIST]
     # Fungsi untuk mencetak hasil dalam format yang diinginkan, terurut sesuai station_codes
     i = 1
-    for station_code in station_codes:
+    for station_code in stations:
         if station_code in last_entries:
-            data = last_entries[station_code]
+            data = last_entries[stations]
             rainfall_value = float(data['Rainfall'])  # Konversi nilai curah hujan ke float
             # Mencetak nilai dalam format float dengan satu angka desimal
-            #print(f"{i}. {station_code} Curah Hujan {rainfall_value:.1f} mm")
+            # print(f"{i}. {station_code} Curah Hujan {rainfall_value:.1f} mm")
             i += 1
 
-# Contoh penggunaan
-station_codes = ['150111', 'STA0259', '150108', '150115', '14032795', '150113', '150114', '150109',
-                 '14032793', '150106', '150107', '150112', 'STA0203', 'STA0008', 'STA0009', '150110',
-                 'STA0178', '150262', '150259', '150261', '150260', 'STG1014']
-last_entries = get_rainfall_last_entries(station_codes)
+
+# # Contoh penggunaan
+# station_codes = ['150111', 'STA0259', '150108', '150115', '14032795', '150113', '150114', '150109',
+#                  '14032793', '150106', '150107', '150112', 'STA0203', 'STA0008', 'STA0009', '150110',
+#                  'STA0178', '150262', '150259', '150261', '150260', 'STG1014']
+last_entries = get_rainfall_last_entries(stations)
 last_entries_json = json.dumps(last_entries, indent=4)
 
 # Mencetak atau menggunakan JSON string
 print(last_entries_json)
 
 # Mencetak laporan curah hujan dengan urutan sesuai station_codes
-print_rainfall_report(last_entries, station_codes)
+print_rainfall_report(last_entries, stations)
+
 
 def download_rainfall_data_aaws(url, stations):
     # Mengirim request ke URL
@@ -108,6 +100,7 @@ def download_rainfall_data_aaws(url, stations):
         return rainfall_data
     else:
         return "Gagal mengakses data."
+
 
 # Menghitung tanggal yang diinginkan (yaitu, satu hari sebelum tanggal saat ini)
 tanggal_dinamis = datetime.now() - timedelta(days=1)
@@ -140,6 +133,7 @@ rainfall_data_json = json.dumps(rainfall_data_aaws, indent=4)
 # Mencetak atau menggunakan JSON string
 print(rainfall_data_json)
 
+
 def download_rainfall_data_aws(url, stations):
     # Mengirim request ke URL
     response = requests.get(url)
@@ -156,6 +150,7 @@ def download_rainfall_data_aws(url, stations):
         return rainfall_data
     else:
         return "Gagal mengakses data."
+
 
 # Menghitung tanggal yang diinginkan (yaitu, satu hari sebelum tanggal saat ini)
 tanggal_dinamis = datetime.now() - timedelta(days=1)
@@ -188,6 +183,7 @@ rainfall_data_json = json.dumps(rainfall_data_aws, indent=4)
 # Mencetak atau menggunakan JSON string
 print(rainfall_data_json)
 
+
 def download_rainfall_data_aws2(url, stations):
     # Mengirim request ke URL
     response = requests.get(url)
@@ -207,6 +203,7 @@ def download_rainfall_data_aws2(url, stations):
         return rainfall_data
     else:
         return "Gagal mengakses data."
+
 
 # Menghitung tanggal yang diinginkan (yaitu, satu hari sebelum tanggal saat ini)
 tanggal_dinamis = datetime.now() - timedelta(days=1)
