@@ -47,7 +47,7 @@ def main():
     workbook = load_workbook(r'S:\FILE_RWID\PyCharmProjects\python-fundamental\Weather-Data-Server-Scrapping\Template.xlsx')
     sheet = workbook.active
 
-    # Station to column mapping for rainfall data
+    # Station to column mapping for rainfall data NI
     station_column_mapping = {
         '150111': 'E4', 'STA0259': 'E5', '150108': 'E6', '150115': 'E7',
         '14032795': 'E8', '150113': 'E9', '150114': 'E10', '150109': 'E11',
