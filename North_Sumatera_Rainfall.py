@@ -4,7 +4,9 @@ import json
 import openpyxl
 import os
 from station_list import ARG_STATION_LIST, AAWS_STATION_LIST, AWS_STATION_LIST, AWS2_STATION_LIST
-from openp
+from openpyxl import load_workbook
+from openpyxl.styles import Alignment
+
 
 def get_rainfall_last_entries(station_codes):
     # Langkah 1: Menghasilkan URL dan tanggal dinamis
