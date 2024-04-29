@@ -4,9 +4,7 @@ import json
 import openpyxl
 import os
 from station_list import ARG_STATION_LIST, AAWS_STATION_LIST, AWS_STATION_LIST, AWS2_STATION_LIST
-from openpyxl import load_workbook
-from openpyxl.styles import Alignment
-
+from openp
 
 def get_rainfall_last_entries(station_codes):
     # Langkah 1: Menghasilkan URL dan tanggal dinamis
@@ -116,7 +114,7 @@ def download_rainfall_data_aws2(url, stations):
                 if line.startswith(station):
                     data = line.split(';')
                     # Menentukan indeks curah hujan berdasarkan stasiun
-                    rainfall_index = 18 if station == 'STA2295' else 7  # Indeks untuk STW1052 adalah 7
+                    rainfall_index = 18 if station == 'STA2295' else 7
                     # Pastikan bahwa 'data' memiliki cukup elemen untuk indeks spesifik
                     if len(data) > rainfall_index:
                         rainfall_data[station] = {'Rainfall': data[rainfall_index].strip(), 'datetime': data[1]}
@@ -163,6 +161,7 @@ def update_excel_sheet(sheet, last_entries, rainfall_data_aaws, rainfall_data_aw
 def main():
     # Define stations and URLs
     stations_aaws = ['STA3209', 'sta3032', 'sta3212', 'STS1001']
+    tanggal_sekarang_formatted = datetime.now().strftime('%d-%m-%Y')
     tanggal_dinamis = datetime.now() - timedelta(days=1)
     tanggal_format_url = tanggal_dinamis.strftime("%d-%m-%Y")
     url_aaws = f"http://202.90.198.212/logger/ftp/logAAWS-{tanggal_format_url}.txt"
@@ -186,7 +185,7 @@ def main():
     sheet = workbook.active
 
     tanggal_kemarin = tanggal_dinamis.strftime('%d-%m-%Y')
-    sheet['A1'] = f"Monitoring Data Curah Hujan ARG, AWS, dan AAWS Sumatera Utara per {tanggal_kemarin} Jam 00.00 UTC"
+    sheet['A1'] = f"Monitoring Data Curah Hujan ARG, AWS, dan AAWS Sumatera Utara per {tanggal_sekarang_formatted} Jam 00.00 UTC"
 
     station_column_mapping = {
         '150111': 'E4', 'STA0259': 'E5', '150108': 'E6', '150115': 'E7',
@@ -201,7 +200,7 @@ def main():
 
     update_excel_sheet(sheet, last_entries, rainfall_data_aaws, rainfall_data_aws, rainfall_data_aws2, station_column_mapping)
 
-    save_path = fr'S:\FILE_RWID\PyCharmProjects\python-fundamental\Weather-Data-Server-Scrapping\Monitoring Hujan Alat Otomatis Tanggal {tanggal_kemarin}.xlsx'
+    save_path = fr'S:\FILE_RWID\PyCharmProjects\python-fundamental\Weather-Data-Server-Scrapping\Monitoring Hujan Alat Otomatis Tanggal {tanggal_sekarang_formatted}.xlsx'
     workbook.save(save_path)
 
 if __name__ == "__main__":
