@@ -4,37 +4,13 @@ import json
 import openpyxl
 import os
 from station_list import ARG_STATION_LIST, AAWS_STATION_LIST, AWS_STATION_LIST, AWS2_STATION_LIST
+import schedule
+import time
 from openpyxl import load_workbook
 from openpyxl.styles import Alignment
 
 
-def get_rainfall_last_entries(station_codes):
-    # Langkah 1: Menghasilkan URL dan tanggal dinamis
-    tanggal_sekarang = datetime.now()
-    tanggal_sebelumnya = tanggal_sekarang - timedelta(days=1)
-    formatted_date = tanggal_sebelumnya.strftime('log-%d-%m-%Y.txt')
-    dynamic_date = tanggal_sebelumnya.strftime('%d%m%Y')  # Format tanggal menjadi DDMMYYYY
 
-    url_dinamis = f"http://202.90.198.212/logger/{formatted_date}"
-
-    # Langkah 2: Mengunduh dan memproses data
-    response = requests.get(url_dinamis)
-    if response.status_code == 200:
-        data_string = response.text
-        last_entries = {}
-        for line in data_string.strip().split('\n'):
-            parts = line.split(';')
-            if len(parts) > 3 and parts[0] in station_codes:
-                station_code = parts[0]
-                date_time = parts[1]
-                # Pengecekan DateTime format menjadi dinamis
-                if date_time.startswith(dynamic_date):
-                    last_entries[station_code] = {
-                        'DateTime': date_time,
-                        'Rainfall': parts[2]
-                    }
-
-        return last_entries
 def get_rainfall_last_entries(station_codes):
     # Langkah 1: Menghasilkan URL dan tanggal dinamis
     tanggal_sekarang = datetime.now()
@@ -183,7 +159,7 @@ def main():
     rainfall_data_aws = download_rainfall_data_aws(url_aws, stations_aws)
     rainfall_data_aws2 = download_rainfall_data_aws2(url_aws2, stations_aws2)
 
-    workbook = load_workbook(r'S:\FILE_RWID\PyCharmProjects\python-fundamental\Weather-Data-Server-Scrapping\Template.xlsx')
+    workbook = load_workbook(r'D:\PYTHON\Weather-Data-Server-Scrapping\Template.xlsx')
     sheet = workbook.active
 
     tanggal_kemarin = tanggal_dinamis.strftime('%d-%m-%Y')
@@ -202,11 +178,14 @@ def main():
 
     update_excel_sheet(sheet, last_entries, rainfall_data_aaws, rainfall_data_aws, rainfall_data_aws2, station_column_mapping)
 
-    save_path = fr'S:\FILE_RWID\PyCharmProjects\python-fundamental\Weather-Data-Server-Scrapping\Monitoring Hujan Alat Otomatis Tanggal {tanggal_sekarang_formatted}.xlsx'
+    save_path = fr'D:\File_Monitoring_Hujan_Aloptama_Harian\Monitoring Hujan Alat Otomatis Tanggal {tanggal_sekarang_formatted}.xlsx'
     workbook.save(save_path)
 
 if __name__ == "__main__":
 # Calling main1 to run the script
-    main()
+    schedule.every().day.at("15:32").do(main)  # Menjadwalkan skrip untuk dijalankan setiap hari jam 07.30
+    while True:
+        schedule.run_pending()  # Menjalankan tugas yang sudah dijadwalkan
+        time.sleep(60)
 
 
