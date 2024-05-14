@@ -45,6 +45,11 @@ def get_rainfall_last_entries(station_codes):
     else:
         print(f"Error mengunduh data: Status code {response.status_code}")
         return {}
+def extract_datetime_from_line(line):
+    parts = line.split(' ')
+    filename = parts[0]  # Mengambil bagian nama file
+    datetime_part = filename[9:-4]  # Mengambil bagian tanggal dan waktu
+    return datetime_part
 
 def download_rainfall_data_aaws(url, stations):
     # Mengirim request ke URL
@@ -55,10 +60,15 @@ def download_rainfall_data_aaws(url, stations):
         rainfall_data = {}
         for line in lines:
             for station in stations:
+
                 if line.startswith(station):
                     data = line.split(';')
+                    data_datetime = line.split(' ')[0]
+                    datetime_part = data_datetime[7:-4]
                     # Data curah hujan terletak di indeks ke-8
-                    rainfall_data[station] = float(data[8].strip()) if len(data) > 8 else 0.0  # indeks dimulai dari 0
+                    rainfall_data[station] = {'rainfall': float(data[8].strip()) if len(data) > 8 else 0.0,
+                                              'datetime': datetime_part }# indeks dimulai dari 0
+
         return rainfall_data
     else:
         return "Gagal mengakses data."
@@ -68,17 +78,28 @@ def download_rainfall_data_aws(url, stations):
     response = requests.get(url)
     if response.status_code == 200:
         lines = response.text.split('\n')
-        # Mencari data untuk stasiun yang diinginkan
         rainfall_data = {}
         for line in lines:
             for station in stations:
                 if station in line:
                     data = line.split(',')
+                    filename = line.split(' ')[0]  # Asalnya: 'sta160051202405132340.txt' atau format lain
+                    if station in ['160051', '160044']:
+                        datetime_part = filename[6:-4]  # Memotong bagian datetime dari filename
+                    elif station == 'STA2068':
+                        datetime_part = filename[7:-4]  # Memotong bagian datetime untuk STA2068
+                    else:
+                        datetime_part = filename[9:-4]  # Memotong bagian datetime untuk stasiun lain
+
                     # Data curah hujan terletak di indeks ke-10
-                    rainfall_data[station] = float(data[10]) if len(data) > 10 else 0.0
+                    rainfall_data[station] = {
+                        'datetime': datetime_part,
+                        'rainfall': float(data[10]) if len(data) > 10 else 0.0
+                    }
         return rainfall_data
     else:
         return "Gagal mengakses data."
+
 
 def download_rainfall_data_aws2(url, stations):
     # Mengirim request ke URL
@@ -111,6 +132,7 @@ def update_excel_sheet(sheet, last_entries, rainfall_data_aaws, rainfall_data_aw
     center_alignment = Alignment(horizontal='center')
 
     for station, data in combined_data.items():
+        print(f"{station}: {data}")
         if station in station_column_mapping:
             column_cell = station_column_mapping[station]
             # Apply center alignment for specific cells
@@ -182,11 +204,11 @@ def main():
     workbook.save(save_path)
 
 if __name__ == "__main__":
-    # main()
+    main()
     #Calling main1 to run the script
-    schedule.every().day.at("07:33").do(main)  # Menjadwalkan skrip untuk dijalankan setiap hari jam 07.30
-    while True:
-        schedule.run_pending()  # Menjalankan tugas yang sudah dijadwalkan
-        time.sleep(60)
+    # schedule.every().day.at("07:33").do(main)  # Menjadwalkan skrip untuk dijalankan setiap hari jam 07.30
+    # while True:
+    #     schedule.run_pending()  # Menjalankan tugas yang sudah dijadwalkan
+    #     time.sleep(60)
 
 
