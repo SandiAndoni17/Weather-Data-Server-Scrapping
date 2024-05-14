@@ -9,6 +9,40 @@ import time
 from openpyxl import load_workbook
 from openpyxl.styles import Alignment
 
+station_descriptions = {
+    '150111': 'ARG Arse',
+    'STA0259': 'ARG Bahorok',
+    '150108': 'ARG Harian',
+    '150115': 'ARG Kualuh Selatan',
+    '14032795': 'ARG Lubuk Barumun',
+    '150113': 'ARG Mompang',
+    '150114': 'ARG Patiluban',
+    '150109': 'ARG Salak',
+    '14032793': 'ARG Simanindo',
+    '150106': 'ARG Sinabung',
+    '150107': 'ARG Sipoholon',
+    '150112': 'ARG Sipispis',
+    'STA0203': 'ARG Kota Pinang',
+    'STA0008': 'ARG Tapanuli',
+    'STA0009': 'ARG Sidikalang',
+    '150110': 'ARG Pakkat',
+    'sta0178': 'ARG Gurgur Balige',
+    '150262': 'ARG Merek',
+    '150259': 'ARG Raya',
+    '150261': 'ARG Tiga Binanga',
+    '150260': 'ARG PDAM Sunggal',
+    'STG1014': 'ARG Teluk Dalam',
+    'STA3209': 'AAWS Batubara',
+    'sta3032': 'AAWS Deli Serdang',
+    'sta3212': 'AAWS Hinai Langkat',
+    'STS1001': 'AAWS Sei Rejo',
+    'STA2068': 'AWS Staklim Deli Serdang',
+    '160051': 'AWS Kebun Sosa',
+    '160044': 'AWS Parapat',
+    'STA2295': 'AWS Dolok Sanggul',
+    'STW1052': 'AWS Jawa Maraja Bah Jambi'
+}
+
 
 
 def get_rainfall_last_entries(station_codes):
@@ -121,7 +155,7 @@ def download_rainfall_data_aws2(url, stations):
     else:
         return "Gagal mengakses data."
 
-def update_excel_sheet(sheet, last_entries, rainfall_data_aaws, rainfall_data_aws, rainfall_data_aws2, station_column_mapping):
+def update_excel_sheet(sheet, last_entries, rainfall_data_aaws, rainfall_data_aws, rainfall_data_aws2, station_column_mapping, station_descriptions):
     combined_data = {}
     combined_data.update(last_entries)
     combined_data.update(rainfall_data_aaws)
@@ -131,8 +165,25 @@ def update_excel_sheet(sheet, last_entries, rainfall_data_aaws, rainfall_data_aw
     # Center alignment for cells in column E from E27 to E34
     center_alignment = Alignment(horizontal='center')
 
-    for station, data in combined_data.items():
-        print(f"{station}: {data}")
+    # Definisi urutan tetap stasiun
+    fixed_order_stations = [
+        '150111', 'STA0259', '150108', '150115', '14032795', '150113', '150114', '150109',
+        '14032793', '150106', '150107', '150112', 'STA0203', 'STA0008', 'STA0009', '150110',
+        'sta0178', '150262', '150259', '150261', '150260', 'STG1014', 'STA3209', 'sta3032',
+        'sta3212', 'STS1001', 'STA2068', '160051', '160044', 'STA2295', 'STW1052'
+    ]
+
+    index = 1
+    for station in fixed_order_stations:
+        data = combined_data.get(station, {'DateTime': '', 'Rainfall': ''})
+        description = station_descriptions.get(station, 'Unknown Station')
+        datetime = data.get('DateTime', '')
+        rainfall = data.get('Rainfall', '')
+
+        # Mencetak dengan format yang diinginkan
+        print(f"{index}. {station}\t{description} {datetime} {rainfall}")
+        index += 1  # Meningkatkan index untuk setiap stasiun
+
         if station in station_column_mapping:
             column_cell = station_column_mapping[station]
             # Apply center alignment for specific cells
@@ -198,7 +249,7 @@ def main():
         '160044': 'E32', 'STA2295': 'E33', 'STW1052': 'E34'
     }
 
-    update_excel_sheet(sheet, last_entries, rainfall_data_aaws, rainfall_data_aws, rainfall_data_aws2, station_column_mapping)
+    update_excel_sheet(sheet, last_entries, rainfall_data_aaws, rainfall_data_aws, rainfall_data_aws2, station_column_mapping,station_descriptions)
 
     save_path = fr'D:\File_Monitoring_Hujan_Aloptama_Harian\Monitoring Hujan Alat Otomatis Tanggal {tanggal_sekarang_formatted}.xlsx'
     workbook.save(save_path)
