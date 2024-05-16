@@ -156,6 +156,7 @@ def download_rainfall_data_aws2(url, stations):
     else:
         return "Gagal mengakses data."
 
+
 def update_excel_sheet(sheet, last_entries, rainfall_data_aaws, rainfall_data_aws, rainfall_data_aws2, station_column_mapping, station_descriptions):
     combined_data = {}
     combined_data.update(last_entries)
@@ -178,11 +179,16 @@ def update_excel_sheet(sheet, last_entries, rainfall_data_aaws, rainfall_data_aw
     for station in fixed_order_stations:
         data = combined_data.get(station, {'DateTime': '', 'Rainfall': ''})
         description = station_descriptions.get(station, 'Unknown Station')
-        datetime = data.get('DateTime', data.get('datetime', ''))
+        datetime_str = data.get('DateTime', data.get('datetime', ''))
         rainfall = data.get('Rainfall', data.get('rainfall', ''))
+        time_part = datetime_str[-4:]  # Mengambil bagian HHMM dari datetime
+
+        # Mendefinisikan validitas data berdasarkan waktu
+        hour = int(time_part[:2]) if len(time_part) == 4 and time_part.isdigit() else 24  # Asumsikan data tidak valid jika format jam salah
+        valid_data_message = "" if hour >= 23 else " Data tidak valid, silahkan cek data jam 00.00"
 
         # Mencetak dengan format yang diinginkan
-        print(f"{index}. {station}\t{description} {datetime} {rainfall}")
+        print(f"{index}. {station}\t{description} {datetime_str} {rainfall}{valid_data_message}")
         index += 1  # Meningkatkan index untuk setiap stasiun
 
         if station in station_column_mapping:
@@ -191,25 +197,8 @@ def update_excel_sheet(sheet, last_entries, rainfall_data_aaws, rainfall_data_aw
             if column_cell in ['E27', 'E28', 'E29', 'E30', 'E31', 'E32', 'E33', 'E34']:
                 sheet[column_cell].alignment = center_alignment
 
-            if isinstance(data, dict):
-                # Special case for station 'STG1014'
-                if station == 'STG1014':
-                    sheet[column_cell] = 'NR'
-                else:
-                    # Format rainfall data
-                    rainfall_value = rainfall
-                    if rainfall_value:
-                        rainfall_float = float(rainfall_value)
-                        if rainfall_float == 0:
-                            formatted_value = '-'
-                        else:
-                            formatted_value = f"{rainfall_float:.1f}"
-                    else:
-                        formatted_value = '-'
-                    sheet[column_cell] = formatted_value
-            else:
-                sheet[column_cell] = data if data != 0 else '-'
-
+            formatted_value = f"{float(rainfall):.1f}" if rainfall not in ["Data Tidak Valid", ""] else "Data Tidak Valid"
+            sheet[column_cell] = formatted_value
 def main():
     # Define stations and URLs
     stations_aaws = ['STA3209', 'sta3032', 'sta3212', 'STS1001']

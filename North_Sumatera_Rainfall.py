@@ -184,7 +184,7 @@ def main():
 if __name__ == "__main__":
     # main()
     #Calling main1 to run the script
-    schedule.every().day.at("07:33").do(main)  # Menjadwalkan skrip untuk dijalankan setiap hari jam 07.30
+    schedule.every().day.at("07:45").do(main)  # Menjadwalkan skrip untuk dijalankan setiap hari jam 07.30
     while True:
         schedule.run_pending()  # Menjalankan tugas yang sudah dijadwalkan
         time.sleep(60)
